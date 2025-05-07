@@ -6,6 +6,7 @@ import datetime
 import os
 from timezonefinder import TimezoneFinder
 import pytz
+import streamlit.components.v1 as components
 
 # Hàm chuyển đổi thời gian sang múi giờ người dùng
 def convert_to_user_timezone(lat, lon):
@@ -40,7 +41,17 @@ st.sidebar.header("📍 Gửi cảm xúc của bạn")
 emotion = st.sidebar.selectbox("Cảm xúc", ["😊 Vui", "😢 Buồn", "😨 Sợ", "😠 Tức giận", "😌 Thoải mái"])
 note = st.sidebar.text_input("Ghi chú (tuỳ chọn)")
 user_name = st.sidebar.text_input("Tên người dùng (hoặc tên bạn bè)", "Bạn")
-st.sidebar.markdown("*Bấm vào bản đồ để chọn vị trí.*")
+st.sidebar.markdown("*Bấm vào bản đồ để chọn vị trí hoặc sử dụng định vị hiện tại.*")
+
+# --- Định vị vị trí người dùng ---
+# Chạy JavaScript để lấy vị trí người dùng
+location = components.html("""
+    <script type="text/javascript">
+        navigator.geolocation.getCurrentPosition(function(position) {
+            window.parent.postMessage({lat: position.coords.latitude, lon: position.coords.longitude}, "*");
+        });
+    </script>
+""", height=0, width=0)
 
 # --- Bản đồ ---
 m = folium.Map(location=[10.762622, 106.660172], zoom_start=12)
@@ -57,6 +68,12 @@ for _, row in df.iterrows():
 # Hiển thị bản đồ tương tác
 map_data = st_folium(m, width=700, height=500)
 coords = map_data.get("last_clicked")
+
+# Nếu định vị được vị trí, hiển thị vị trí hiện tại của người dùng trên bản đồ
+if location:
+    lat, lon = location["lat"], location["lon"]
+    folium.Marker([lat, lon], popup="Vị trí hiện tại", icon=folium.Icon(color="green")).add_to(m)
+    coords = {"lat": lat, "lng": lon}  # Cập nhật vị trí của người dùng
 
 # Gửi cảm xúc mới
 if coords and emotion:
