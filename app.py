@@ -44,7 +44,6 @@ user_name = st.sidebar.text_input("Tên người dùng (hoặc tên bạn bè)",
 st.sidebar.markdown("*Bấm vào bản đồ để chọn vị trí hoặc sử dụng định vị hiện tại.*")
 
 # --- Định vị vị trí người dùng ---
-# Chạy JavaScript để lấy vị trí người dùng
 location = components.html("""
     <script type="text/javascript">
         navigator.geolocation.getCurrentPosition(function(position) {
@@ -75,8 +74,9 @@ if location:
     folium.Marker([lat, lon], popup="Vị trí hiện tại", icon=folium.Icon(color="green")).add_to(m)
     coords = {"lat": lat, "lng": lon}  # Cập nhật vị trí của người dùng
 
-# Gửi cảm xúc mới
+# Kiểm tra nếu đã chọn vị trí và cảm xúc
 if coords and emotion:
+    # Hiển thị nút Gửi cảm xúc
     if st.sidebar.button("📩 Gửi cảm xúc"):
         # Chuyển đổi thời gian theo múi giờ người dùng
         local_time = convert_to_user_timezone(coords["lat"], coords["lng"])
